@@ -1,109 +1,273 @@
+// Storage Account mit Container
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "location": {
-        "type": "string",
-        "defaultValue": "[resourceGroup().location]"
-      },
-      "workspaceName": {
-        "type": "string",
-        "defaultValue": "sentinel"
-      },
-      "retentionInDays": {
-        "type": "int",
-        "defaultValue": 90,
-        "maxValue": 730,
-        "minValue": 30
-      },
-      "dailyQuotaInGb": {
-        "type": "int",
-        "defaultValue": 1
-      },
-      "tagsByResource": { 
-        "type": "object", 
-        "defaultValue": {} 
-      }
+        "enterpriseScaleCompanyPrefix": {
+            "type": "string",
+            "maxLength": 10,
+            "metadata": {
+                "description": "Provide a prefix (max 10 characters, unique at tenant-scope) for the resources created as part of Azure Arc deployment."
+            }
+        },
+        "createStorageAccount": {
+            "type": "string",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "defaultValue": "Yes"
+        },
+        "rgNameStorageAccount": {
+            "type": "string",
+            "defaultValue": "'rsgr-mglz-azurepolicyguestconfig-01')]",
+            "metadata": {
+                "description": "Provide the name of the resource group for the Storage Account for Azure Policy Guest Configuration."
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "'azurepolicyguestconfig')]",
+            "metadata": {
+                "description": "Provide the name of the Storage Account for Azure Policy Guest Configuration."
+            }
+        },
+        "subscriptionIdAzurePolicyGuestConfig": {
+            "type": "string",
+            "defaultValue": "",
+            "maxLength": 36,
+            "metadata": {
+                "description": "Provide the subscription ID of an existing subscription in which the resource group and resources for the Storage Account for Azure Policy Guest Configuration should be created."
+            }
+        },
+        "locationAzurePolicyGuestConfig": {
+            "type": "string",
+            "defaultValue": "[deployment().location]",
+            "metadata": {
+                "description": "Provide the location in which the resource group and resources for the Storage Account for Azure Policy Guest Configuration should be created."
+            }
+        },
+        "tagsAzurePolicyGuestConfig": {
+            "type": "object"
+        },
+        "createTier0": {
+            "type": "string",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "defaultValue": "Yes"
+        },
+        "rgNameTier0": {
+            "type": "string",
+            "defaultValue": "'rsgr-idlz-arctier0-01')]",
+            "metadata": {
+                "description": "Provide the name of the resource group for Tier 0."
+            }
+        },
+        "subscriptionIdTier0": {
+            "type": "string",
+            "defaultValue": "",
+            "maxLength": 36,
+            "metadata": {
+                "description": "Provide the subscription ID of an existing subscription in which the resource group for Tier 0 should be created."
+            }
+        },
+        "locationTier0": {
+            "type": "string",
+            "defaultValue": "[deployment().location]",
+            "metadata": {
+                "description": "Provide the location in which the resource group for Tier 0 should be created."
+            }
+        },
+        "tagsTier0": {
+            "type": "object"
+        },
+        "createTier1": {
+            "type": "string",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "defaultValue": "Yes"
+        },
+        "rgNameTier1": {
+            "type": "string",
+            "defaultValue": "'rsgr-aplz-arctier1-01')]",
+            "metadata": {
+                "description": "Provide the name of the resource group for Tier 1."
+            }
+        },
+        "subscriptionIdTier1": {
+            "type": "string",
+            "defaultValue": "",
+            "maxLength": 36,
+            "metadata": {
+                "description": "Provide the subscription ID of an existing subscription in which the resource group for Tier 1 should be created."
+            }
+        },
+        "locationTier1": {
+            "type": "string",
+            "defaultValue": "[deployment().location]",
+            "metadata": {
+                "description": "Provide the location in which the resource group for Tier 1 should be created."
+            }
+        },
+        "tagsTier1": {
+            "type": "object"
+        },
+        "createTier2": {
+            "type": "string",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "defaultValue": "Yes"
+        },
+        "rgNameTier2": {
+            "type": "string",
+            "defaultValue": "'rsgr-aplz-arctier2-01')]",
+            "metadata": {
+                "description": "Provide the name of the resource group for Tier 2."
+            }
+        },
+        "subscriptionIdTier2": {
+            "type": "string",
+            "defaultValue": "",
+            "maxLength": 36,
+            "metadata": {
+                "description": "Provide the subscription ID of an existing subscription in which the resource group for Tier 2 should be created."
+            }
+        },
+        "locationTier2": {
+            "type": "string",
+            "defaultValue": "[deployment().location]",
+            "metadata": {
+                "description": "Provide the location in which the resource group for Tier 2 should be created."
+            }
+        },
+        "tagsTier2": {
+            "type": "object"
+        },
+        "currentDateTimeUtcNow": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "The current date and time using the utcNow function. Used for deployment name uniqueness"
+            }
+        }
     },
     "variables": {
-      "workspaceName": "[parameters('workspaceName')]",
-      "solutionName": "[format('SecurityInsights({0})', variables('workspaceName'))]",
-      "tagsWorkspaces": "[ if(contains(parameters('tagsByResource'), 'Microsoft.OperationalInsights/workspaces'), parameters('tagsByResource')['Microsoft.OperationalInsights/workspaces'], json('{}')) ]",
-      "tagsSolutions":"[ if(contains(parameters('tagsByResource'), 'Microsoft.OperationsManagement/solutions'), parameters('tagsByResource')['Microsoft.OperationsManagement/solutions'], json('{}')) ]"
+        "deploymentUris": {
+            "resourceGroup": "[uri(deployment().properties.templateLink.uri, 'subscriptionTemplates/resourceGroup.json')]"
+        },
+        "deploymentSuffix": "[concat('-', deployment().location, '-', guid(parameters('enterpriseScaleCompanyPrefix'), parameters('currentDateTimeUtcNow')))]",
+        "deploymentNames": {
+            "azurePolicyGuestConfig": "[take(concat('arc-tier0-', variables('deploymentSuffix')), 64)]",
+            "tier0DeploymentName": "[take(concat('arc-tier0-', variables('deploymentSuffix')), 64)]",
+            "tier1DeploymentName": "[take(concat('arc-tier1-', variables('deploymentSuffix')), 64)]",
+            "tier2DeploymentName": "[take(concat('arc-tier2-', variables('deploymentSuffix')), 64)]"
+        },
+        "storageAccountNameAzurePolicyGuestConfig" : "[toLower(concat(parameters('enterpriseScaleCompanyPrefix'), parameters('storageAccountName'), guid(parameters('enterpriseScaleCompanyPrefix'), parameters('currentDateTimeUtcNow'))))]"
     },
     "resources": [
       {
-        "type": "Microsoft.OperationalInsights/workspaces",
-        "apiVersion": "2020-08-01",
-        "name": "[variables('workspaceName')]",
-        "location": "[parameters('location')]",
-        "tags": "[variables('tagsWorkspaces')]",
+        // Creating resource group for AzurePolicyGuestConfig
+        "condition": "[and(not(empty(parameters('createStorageAccount'))), not(empty(parameters('rgNameStorageAccount'))), not(empty(parameters('subscriptionIdAzurePolicyGuestConfig'))))]",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "name": "[variables('deploymentNames').azurePolicyGuestConfig]",
+        "subscriptionId": "[parameters('subscriptionIdTier0')]",
+        "location": "[deployment().location]",
         "properties": {
-          "sku": {
-            "name": "PerGB2018"
-          },
-          "retentionInDays": "[parameters('retentionInDays')]",
-          "workspaceCapping": {
-            "dailyQuotaGb":  "[parameters('dailyQuotaInGb')]"
-          }
+            "mode": "Incremental",
+            "templateLink": {
+                "contentVersion": "1.0.0.0",
+                "uri": "[variables('deploymentUris').resourceGroup]"
+            },
+            "parameters": {
+                "rgName": {
+                    "value": "[parameters('rgNameStorageAccount')]"
+                },
+                "location": {
+                    "value": "[parameters('locationAzurePolicyGuestConfig')]"
+                }
+            }
         }
       },
       {
-        "type": "Microsoft.OperationsManagement/solutions",
-        "apiVersion": "2015-11-01-preview",
-        "name": "[variables('solutionName')]",
-        "location": "[parameters('location')]",
-        "tags": "[variables('tagsSolutions')]",
+        // Creating resource group for Tier 0
+        "condition": "[and(not(empty(parameters('createTier0'))), not(empty(parameters('rgNameTier0'))), not(empty(parameters('subscriptionIdTier0'))))]",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "name": "[variables('deploymentNames').tier0DeploymentName]",
+        "subscriptionId": "[parameters('subscriptionIdTier0')]",
+        "location": "[deployment().location]",
         "properties": {
-          "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
-        },
-        "plan": {
-          "name": "[variables('solutionName')]",
-          "publisher": "Microsoft",
-          "product": "OMSGallery/SecurityInsights",
-          "promotionCode": ""
-        },
-        "dependsOn": [
-          "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
-        ]
+            "mode": "Incremental",
+            "templateLink": {
+                "contentVersion": "1.0.0.0",
+                "uri": "[variables('deploymentUris').resourceGroup]"
+            },
+            "parameters": {
+                "rgName": {
+                    "value": "[parameters('rgNameTier0')]"
+                },
+                "location": {
+                    "value": "[parameters('locationTier0')]"
+                }
+            }
+        }
+      },
+      {
+        // Creating resource group for Tier 1
+        "condition": "[and(not(empty(parameters('createTier1'))), not(empty(parameters('rgNameTier1'))), not(empty(parameters('subscriptionIdTier1'))))]",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "name": "[variables('deploymentNames').tier1DeploymentName]",
+        "subscriptionId": "[parameters('subscriptionIdTier1')]",
+        "location": "[deployment().location]",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "contentVersion": "1.0.0.0",
+                "uri": "[variables('deploymentUris').resourceGroup]"
+            },
+            "parameters": {
+                "rgName": {
+                    "value": "[parameters('rgNameTier1')]"
+                },
+                "location": {
+                    "value": "[parameters('locationTier1')]"
+                }
+            }
+        }
+      },
+      {
+        // Creating resource group for Tier 2
+        "condition": "[and(not(empty(parameters('createTier2'))), not(empty(parameters('rgNameTier2'))), not(empty(parameters('subscriptionIdTier2'))))]",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "name": "[variables('deploymentNames').tier2DeploymentName]",
+        "subscriptionId": "[parameters('subscriptionIdTier2')]",
+        "location": "[deployment().location]",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "contentVersion": "1.0.0.0",
+                "uri": "[variables('deploymentUris').resourceGroup]"
+            },
+            "parameters": {
+                "rgName": {
+                    "value": "[parameters('rgNameTier2')]"
+                },
+                "location": {
+                    "value": "[parameters('locationTier2')]"
+                }
+            }
+        }
       }
     ],
     "outputs": {
-        "subscriptionIdOutput": {
-            "type": "string",
-            "value": "[subscription().Id]"
-        },
-        "resourceGroupOutput": {
-            "type": "string",
-            "value": "[resourceGroup().name]"
-        },
-        "workspaceNameOutput": {
-            "type": "string",
-            "value": "[parameters('workspaceName')]"
-        },
-        "workspaceIdOutput": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2015-11-01-preview').customerId]"
-        },
-        "workspaceKeyOutput": {
-            "type": "string",
-            "value": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2015-11-01-preview').primarySharedKey]"
-        },
-        "pricingTierOutput": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2015-11-01-preview').sku.name]"
-        },
-        "retentionInDaysOutput": {
-            "type": "string",
-            "value": "[string(parameters('retentionInDays'))]"
-        },
-        "workspaceCappingOutput": {
-            "type": "string",
-            "value": "[string(parameters('dailyQuotaInGb'))]"
-        },
-        "locationOutput": {
-            "type": "string",
-            "value": "[parameters('location')]"
-        }
     }
-  }
+}

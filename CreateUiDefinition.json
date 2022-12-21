@@ -1,99 +1,446 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
-    "handler": "Microsoft.Azure.CreateUIDef",
-    "version": "0.1.2-preview",
-    "parameters": {
-        "config": {
-            "isWizard": true,
-            "basics": {
-                "description": "**Azure Sentinel All-In-One** deployment",
-                "location": {
-                    "label": "Location",
-                    "toolTip": "Location for all resources",
-                    "resourceTypes": [
-                        "Microsoft.OperationalInsights"
-                    ]
-                }
-            }
-        },        
-        "basics": [
-		],
-        "steps": [
-			            {
-                "name": "workspace",
-                "label": "Workspace",
-                "elements": [
+    "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json#",
+    "view": {
+        "kind": "Form",
+        "properties": {
+                "title": "Azure Arc All-In-One deployment",
+                "steps": [
                     {
-                        "name": "workspaceName",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Workspace Name",
-                        "placeholder": "",
-                        "defaultValue": "sentinel01",
-                        "toolTip": "Use only allowed characters",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[a-z0-9A-Z]{1,30}$",
-                            "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
-                        },
-                        "visible": true
-                    } ,                   
-					{
-						"name": "retentionInDays",
-						"type": "Microsoft.Common.TextBox",
-						"label": "Number of days of retention",
-						"placeholder": "",
-						"defaultValue": "90",
-						"toolTip": "Use value between 30 and 730",
-						"constraints": {
-							"required": true,
-							"regex": "^[3-9][0-9]$|^[1-6][0-9][0-9]$|^[7][0-2][0-9]$|^730$",
-							"validationMessage": "Only numbers allowed, and must be between 30 and 730 days."
-						},
-						"visible": true
-					},
-					{
-						"name": "dailyQuotaInGb",
-						"type": "Microsoft.Common.TextBox",
-						"label": "Daily ingestion limit in GBs. Enter 0 for no limit.",
-						"placeholder": "",
-						"defaultValue": "1",
-						"toolTip": "This limit doesn't apply to the following tables: SecurityAlert, SecurityBaseline, SecurityBaselineSummary, SecurityDetection, SecurityEvent, WindowsFirewall, MaliciousIPCommunication, LinuxAuditLog, SysmonEvent, ProtectionStatus, WindowsEvent",
-						"constraints": {
-							"required": true,
-							"regex": "^[0-9]{1,4}$",
-							"validationMessage": "Only numbers allowed, and the value must be 1-4 characters long."
-						},
-						"visible": true
-					}
+                        "name": "basics",
+                        "label": "Deployment settings",
+                        "elements": [
+                            {
+                                "name": "cloudEnvironment",
+                                "type": "Microsoft.Common.Section",
+                                "label": "Select cloud environment",
+                                "elements": [
+                                    {
+                                        "name": "selection",
+                                        "type": "Microsoft.Common.DropDown",
+                                        "visible": true,
+                                        "label": "Azure cloud environment",
+                                        "defaultValue": "[if(contains(steps('basics').resourceScope.location.name, 'china'), 'Azure China Cloud', if(contains(steps('basics').resourceScope.location.name, 'usgov'), 'Azure US Government', if(contains(steps('basics').resourceScope.location.name, 'usdod'), 'Azure US Government', 'Azure Cloud')))]",
+                                        "multiselect": false,
+                                        "selectAll": false,
+                                        "filter": false,
+                                        "multiLine": true,
+                                        "toolTip": "Select your target Azure cloud environment.",
+                                        "constraints": {
+                                            "allowedValues": [
+                                                {
+                                                    "label": "Azure Cloud",
+                                                    "value": "AzureCloud"
+                                                },
+                                                {
+                                                    "label": "Azure China Cloud",
+                                                    "value": "AzureChinaCloud"
+                                                },
+                                                {
+                                                    "label": "Azure US Government",
+                                                    "value": "AzureUSGovernment"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "warning",
+                                        "type": "Microsoft.Common.InfoBox",
+                                        "visible": true,
+                                        "options": {
+                                            "icon": "Warning",
+                                            "text": "This value should be automatically set based on the list of available locations. Only change this if you believe the value to be incorrect.",
+                                            "uri": "https://docs.microsoft.com/en-us/cli/azure/manage-clouds-azure-cli"
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "resourceScope",
+                                "type": "Microsoft.Common.ResourceScope"
+                            },
+                            {
+                                "name": "getSubscriptions",
+                                "type": "Microsoft.Solutions.ArmApiControl",
+                                "request": {
+                                    "method": "POST",
+                                    "path": "providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01",
+                                    "body": {
+                                        "query": "ResourceContainers | where type =~ 'microsoft.resources/subscriptions' | where properties.state =~ 'enabled' | project label=tostring(name), description=subscriptionId, value=subscriptionId | order by label asc"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "getLocations",
+                                "type": "Microsoft.Solutions.ArmApiControl",
+                                "request": {
+                                    "method": "GET",
+                                    "path": "locations?api-version=2019-11-01"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "coreSettings",
+                        "label": "Core Settings",
+                        "elements": [
+                            {
+                                "name": "enterpriseScaleCompanyPrefix",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Company Prefix",
+                                "placeholder": "",
+                                "toolTip": "Provide a prefix (max 10 characters, unique at tenant-scope) for the resources created as part of Azure Arc deployment.",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z]{1,10}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-10 characters long."
+                                },
+                                "visible": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "azurePolicyGuestConfig",
+                        "label": "Storage Account for Azure Policy Guest Configuration",
+                        "elements": [
+                            {
+                                "name": "createStorageAccount",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Creat Storage Account for Azure Policy Guest Configuration",
+                                "defaultValue": "Yes (recommended)",
+                                "toolTip": "If 'Yes' is selected, a Resoruce Group and a Storage Account for Azure Policy Guest Configuration will be added",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "Yes (recommended)",
+                                            "value": "Yes"
+                                        },
+                                        {
+                                            "label": "No",
+                                            "value": "No"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "rgNameStorageAccount",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Resource Group Name",
+                                "placeholder": "",
+                                "defaultValue": "rsgr-mglz-azurepolicyguestconfig-01",
+                                "toolTip": "Use only allowed characters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z_-]{1,90}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-90 characters long."
+                                },
+                                "visible": "[equals(steps('azurePolicyGuestConfig').createStorageAccount,'Yes')]"
+                            },
+                            {
+                                "name": "storageAccountName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Storage Account  Name",
+                                "placeholder": "",
+                                "defaultValue": "[toLower('azurepolicyguestconfig')]",
+                                "toolTip": "Use only allowed characters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9]{1,90}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-90 characters long."
+                                },
+                                "visible": "[equals(steps('azurePolicyGuestConfig').createStorageAccount,'Yes')]"
+                            },
+                            {
+                                "name": "subscriptionIdAzurePolicyGuestConfig",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Target subscription",
+                                "defaultValue": "[parse('[]')]",
+                                "toolTip": "Select a subscription.",
+                                "multiselect": false,
+                                "selectAll": false,
+                                "filter": true,
+                                "filterPlaceholder": "Filter subscriptions...",
+                                "multiLine": true,
+                                "constraints": {
+                                    "allowedValues": "[steps('basics').getSubscriptions.data]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azurePolicyGuestConfig').createStorageAccount,'Yes')]"
+                            },
+                            {
+                                "name": "locationAzurePolicyGuestConfig",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Region for resource group and resources",
+                                "filter": true,
+                                "toolTip": "Select the target region for the Azure Policy Guest Configuration resource group and storage account.",
+                                "defaultValue": "[steps('basics').resourceScope.location.displayName]",
+                                "constraints": {
+                                    "allowedValues": "[map(steps('basics').getLocations.value,(item) => parse(concat('{\"label\":\"',item.displayName,'\",\"value\":\"',item.name,'\"}')))]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azurePolicyGuestConfig').createStorageAccount,'Yes')]"
+                            },
+                            {
+                                "name": "tagsAzurePolicyGuestConfig",
+                                "type": "Microsoft.Common.TagsByResource",
+                                "resources": [
+                                    "Microsoft.Resources/resourceGroups",
+                                    "Microsoft.Storage/storageAccounts"
+                                ],
+                                "visible": "[equals(steps('azurePolicyGuestConfig').createStorageAccount,'Yes')]"
+                            }
 
-                ]
-            },
-            {
-                "name": "tags",
-                "label": "Tags",
-                "elements": [
+                        ]
+                    },
                     {
-                        "name": "tagsByResource",
-                        "type": "Microsoft.Common.TagsByResource",
-                        "resources": [
-                            "Microsoft.OperationalInsights/workspaces",
-                            "Microsoft.OperationsManagement/solutions"
+                        "name": "azureArcSettingsTier0",
+                        "label": "Tier 0",
+                        "elements": [
+                            {
+                                "name": "createTier0",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Creat Tier 0 resources",
+                                "defaultValue": "Yes (recommended)",
+                                "toolTip": "If 'Yes' is selected, a resources für Tier 0 will be added",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "Yes (recommended)",
+                                            "value": "Yes"
+                                        },
+                                        {
+                                            "label": "No",
+                                            "value": "No"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "rgNameTier0",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Tier 0 Resource Group Name",
+                                "placeholder": "",
+                                "defaultValue": "rsgr-idlz-arctier0-01",
+                                "toolTip": "Use only allowed characters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z_-]{1,90}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-90 characters long."
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier0').createTier0,'Yes')]"
+                            },
+                            {
+                                "name": "subscriptionIdTier0",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Tier 0 Subscription",
+                                "defaultValue": "[parse('[]')]",
+                                "toolTip": "Select a subscription.",
+                                "multiselect": false,
+                                "selectAll": false,
+                                "filter": true,
+                                "filterPlaceholder": "Filter subscriptions...",
+                                "multiLine": true,
+                                "constraints": {
+                                    "allowedValues": "[steps('basics').getSubscriptions.data]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier0').createTier0,'Yes')]"
+                            },
+                            {
+                                "name": "locationTier0",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Region for Tier 0 resource group",
+                                "filter": true,
+                                "toolTip": "Select the target region for the Tier 0 resource group",
+                                "defaultValue": "[steps('basics').resourceScope.location.displayName]",
+                                "constraints": {
+                                    "allowedValues": "[map(steps('basics').getLocations.value,(item) => parse(concat('{\"label\":\"',item.displayName,'\",\"value\":\"',item.name,'\"}')))]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier0').createTier0,'Yes')]"
+                            },
+                            {
+                                "name": "tagsTier0",
+                                "type": "Microsoft.Common.TagsByResource",
+                                "resources": [
+                                    "Microsoft.Resources/resourceGroups"
+                                ],
+                                "visible": "[equals(steps('azureArcSettingsTier0').createTier0,'Yes')]"
+                            }
+
+                        ]
+                    },
+                    {
+                        "name": "azureArcSettingsTier1",
+                        "label": "Tier 1",
+                        "elements": [
+                            {
+                                "name": "createTier1",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Creat Tier 1 resources",
+                                "defaultValue": "Yes (recommended)",
+                                "toolTip": "If 'Yes' is selected, a resources für Tier 1 will be added",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "Yes (recommended)",
+                                            "value": "Yes"
+                                        },
+                                        {
+                                            "label": "No",
+                                            "value": "No"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "rgNameTier1",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Tier 1 Resource Group Name",
+                                "placeholder": "",
+                                "defaultValue": "rsgr-aplz-arctier1-01",
+                                "toolTip": "Use only allowed characters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z_-]{1,90}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-90 characters long."
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier1').createTier1,'Yes')]"
+                            },
+                            {
+                                "name": "subscriptionIdTier1",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Tier 1 Subscription",
+                                "defaultValue": "[parse('[]')]",
+                                "toolTip": "Select a subscription.",
+                                "multiselect": false,
+                                "selectAll": false,
+                                "filter": true,
+                                "filterPlaceholder": "Filter subscriptions...",
+                                "multiLine": true,
+                                "constraints": {
+                                    "allowedValues": "[steps('basics').getSubscriptions.data]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier1').createTier1,'Yes')]"
+                            },
+                            {
+                                "name": "locationTier1",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Region for Tier 1 resource group",
+                                "filter": true,
+                                "toolTip": "Select the target region for the Tier 1 resource group",
+                                "defaultValue": "[steps('basics').resourceScope.location.displayName]",
+                                "constraints": {
+                                    "allowedValues": "[map(steps('basics').getLocations.value,(item) => parse(concat('{\"label\":\"',item.displayName,'\",\"value\":\"',item.name,'\"}')))]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier1').createTier1,'Yes')]"
+                            },
+                            {
+                                "name": "tagsTier1",
+                                "type": "Microsoft.Common.TagsByResource",
+                                "resources": [
+                                    "Microsoft.Resources/resourceGroups"
+                                ],
+                                "visible": "[equals(steps('azureArcSettingsTier1').createTier1,'Yes')]"
+                            }
+
+                        ]
+                    },
+                    {
+                        "name": "azureArcSettingsTier2",
+                        "label": "Tier 2",
+                        "elements": [
+                            {
+                                "name": "createTier2",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Creat Tier 2 resources",
+                                "defaultValue": "Yes (recommended)",
+                                "toolTip": "If 'Yes' is selected, a resources für Tier 2 will be added",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "Yes (recommended)",
+                                            "value": "Yes"
+                                        },
+                                        {
+                                            "label": "No",
+                                            "value": "No"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "rgNameTier2",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Tier 2 Resource Group Name",
+                                "placeholder": "",
+                                "defaultValue": "rsgr-aplz-arctier2-01",
+                                "toolTip": "Use only allowed characters",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^[a-z0-9A-Z_-]{1,90}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-90 characters long."
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier2').createTier2,'Yes')]"
+                            },
+                            {
+                                "name": "subscriptionIdTier2",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Tier 2 Subscription",
+                                "defaultValue": "[parse('[]')]",
+                                "toolTip": "Select a subscription.",
+                                "multiselect": false,
+                                "selectAll": false,
+                                "filter": true,
+                                "filterPlaceholder": "Filter subscriptions...",
+                                "multiLine": true,
+                                "constraints": {
+                                    "allowedValues": "[steps('basics').getSubscriptions.data]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier2').createTier2,'Yes')]"
+                            },
+                            {
+                                "name": "locationTier2",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Region for Tier 2 resource group",
+                                "filter": true,
+                                "toolTip": "Select the target region for the Tier 2 resource group",
+                                "defaultValue": "[steps('basics').resourceScope.location.displayName]",
+                                "constraints": {
+                                    "allowedValues": "[map(steps('basics').getLocations.value,(item) => parse(concat('{\"label\":\"',item.displayName,'\",\"value\":\"',item.name,'\"}')))]",
+                                    "required": true
+                                },
+                                "visible": "[equals(steps('azureArcSettingsTier2').createTier2,'Yes')]"
+                            },
+                            {
+                                "name": "tagsTier2",
+                                "type": "Microsoft.Common.TagsByResource",
+                                "resources": [
+                                    "Microsoft.Resources/resourceGroups"
+                                ],
+                                "visible": "[equals(steps('azureArcSettingsTier2').createTier2,'Yes')]"
+                            }
+
                         ]
                     }
                 ]
-            }
-        ],
-        "outputs": {
-            "location": "[location()]",
-            "workspaceName": "[steps('workspace').workspaceName]",
-            "retentionInDays": "[steps('workspace').retentionInDays]",
-            "dailyQuotaInGb": "[steps('workspace').dailyQuotaInGb]",
-            "tagsByResource": "[steps('tags').tagsByResource]"
         },
-		"resourceTypes": [
-            "microsoft.resources/resourcegroups",
-			"Microsoft.OperationalInsights/workspaces",
-			"Microsoft.OperationsManagement/solutions"
-		]
+        "outputs": {
+            "parameters": {
+                "rgNameTier0": "[steps('azureArcSettingsTier0').rgNameTier0]",
+                "subscriptionIdTier0": "[steps('azureArcSettingsTier0').subscriptionIdTier0]",
+                "rgNameTier1": "[steps('azureArcSettingsTier1').rgNameTier1]",
+                "subscriptionIdTier1": "[steps('azureArcSettingsTier1').subscriptionIdTier1]",
+                "rgNameTier2": "[steps('azureArcSettingsTier2').rgNameTier2]",
+                "subscriptionIdTier2": "[steps('azureArcSettingsTier2').subscriptionIdTier2]"
+            },
+            "kind": "Tenant"
+        }
     }
 }
