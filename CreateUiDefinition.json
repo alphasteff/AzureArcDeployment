@@ -440,7 +440,8 @@
                 "rgNameTier2": "[steps('azureArcSettingsTier2').rgNameTier2]",
                 "subscriptionIdTier2": "[steps('azureArcSettingsTier2').subscriptionIdTier2]"
             },
-            "kind": "Tenant"
+            "kind": "Tenant",
+            "location": "[steps('basics').resourceScope.location.name]"
         }
     }
 }
