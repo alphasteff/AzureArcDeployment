@@ -14,8 +14,8 @@
                 "description": "Provide location for the resource group"
             }
         },
-        "resourceTags": {
-        "type": "object"
+        "tags": {
+            "type": "object"
         }
     },
     "variables": {},
@@ -25,7 +25,7 @@
             "apiVersion": "2020-10-01",
             "name": "[parameters('rgName')]",
             "location": "[parameters('location')]",
-            "tags": "[parameters('resourceTags')]"
+            "tags": "[parameters('tags')]"
         }
     ],
     "outputs": {}

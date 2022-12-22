@@ -158,17 +158,24 @@
         }
     },
     "variables": {
+        // Declaring all required deployment uri's used for deployments of composite ARM templates
         "deploymentUris": {
-            "resourceGroup": "[uri(deployment().properties.templateLink.uri, 'https://raw.githubusercontent.com/alphasteff/AzureArcDeployment/main/subscriptionTemplates/resourceGroup.json')]"
+            "resourceGroup": "[uri(deployment().properties.templateLink.uri, 'https://raw.githubusercontent.com/alphasteff/AzureArcDeployment/main/subscriptionTemplates/resourceGroup.json')]",
+            "storageAccount": "[uri(deployment().properties.templateLink.uri, 'https://raw.githubusercontent.com/alphasteff/AzureArcDeployment/main/subscriptionTemplates/storageAccount.json')]"
         },
+        // Declaring deterministic deployment names
         "deploymentSuffix": "[concat('-', deployment().location, '-', guid(parameters('enterpriseScaleCompanyPrefix'), parameters('currentDateTimeUtcNow')))]",
         "deploymentNames": {
-            "azurePolicyGuestConfig": "[take(concat('arc-tier0-', variables('deploymentSuffix')), 64)]",
-            "tier0DeploymentName": "[take(concat('arc-tier0-', variables('deploymentSuffix')), 64)]",
-            "tier1DeploymentName": "[take(concat('arc-tier1-', variables('deploymentSuffix')), 64)]",
-            "tier2DeploymentName": "[take(concat('arc-tier2-', variables('deploymentSuffix')), 64)]"
+            "azureSAPolicyGuestConfig": "[take(concat('arc-res-azPolGuestConf', variables('deploymentSuffix')), 64)]",
+            "azureRgPolicyGuestConfig": "[take(concat('arc-rg-tier0', variables('deploymentSuffix')), 64)]",
+            "tier0RgDeploymentName": "[take(concat('arc-rg-tier0', variables('deploymentSuffix')), 64)]",
+            "tier1RgDeploymentName": "[take(concat('arc-rg-tier1', variables('deploymentSuffix')), 64)]",
+            "tier2RgDeploymentName": "[take(concat('arc-rg-tier2', variables('deploymentSuffix')), 64)]"
         },
-        "storageAccountNameAzurePolicyGuestConfig" : "[toLower(concat(parameters('enterpriseScaleCompanyPrefix'), parameters('storageAccountName'), guid(parameters('enterpriseScaleCompanyPrefix'), parameters('currentDateTimeUtcNow'))))]"
+        "storageAccountNameAzurePolicyGuestConfig" : "[toLower(concat(parameters('enterpriseScaleCompanyPrefix'), parameters('storageAccountName'), guid(parameters('enterpriseScaleCompanyPrefix'), parameters('currentDateTimeUtcNow'))))]",
+        "platformResourceIds": {
+            "privateDnsRgResourceId": "[concat('/subscriptions/', parameters('rgNameStorageAccount'), '/resourceGroups/', parameters('rgNameStorageAccount'))]"
+        }
     },
     "resources": [
       {
@@ -176,8 +183,8 @@
         "condition": "[and(not(empty(parameters('createStorageAccount'))), not(empty(parameters('rgNameStorageAccount'))), not(empty(parameters('subscriptionIdAzurePolicyGuestConfig'))))]",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2020-10-01",
-        "name": "[variables('deploymentNames').azurePolicyGuestConfig]",
-        "subscriptionId": "[parameters('subscriptionIdTier0')]",
+        "name": "[variables('deploymentNames').azureRgPolicyGuestConfig]",
+        "subscriptionId": "[parameters('subscriptionIdAzurePolicyGuestConfig')]",
         "location": "[deployment().location]",
         "properties": {
             "mode": "Incremental",
@@ -191,6 +198,43 @@
                 },
                 "location": {
                     "value": "[parameters('locationAzurePolicyGuestConfig')]"
+                },
+                "tags": {
+                    "value": "[parameters('tagsAzurePolicyGuestConfig')]"
+                }
+            }
+        }
+      },
+      {
+        // Creating storage account for AzurePolicyGuestConfig
+        "condition": "[and(not(empty(parameters('createStorageAccount'))), not(empty(parameters('rgNameStorageAccount'))), not(empty(parameters('subscriptionIdAzurePolicyGuestConfig'))))]",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "name": "[variables('deploymentNames').azureSAPolicyGuestConfig]",
+        "subscriptionId": "[parameters('subscriptionIdAzurePolicyGuestConfig')]",
+        "resourceGroup": "[parameters('rgNameStorageAccount')]",
+        "location": "[deployment().location]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Resources/deployments', variables('deploymentNames').azureRgPolicyGuestConfig)]"
+        ],
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "contentVersion": "1.0.0.0",
+                "uri": "[variables('deploymentUris').storageAccount]"
+            },
+            "parameters": {
+                "rgName": {
+                    "value": "[parameters('rgNameStorageAccount')]"
+                },
+                "storageAccountName": {
+                    "value": "[variables('storageAccountNameAzurePolicyGuestConfig')]"
+                },
+                "location": {
+                    "value": "[parameters('locationAzurePolicyGuestConfig')]"
+                },
+                "tags": {
+                    "value": "[parameters('tagsAzurePolicyGuestConfig')]"
                 }
             }
         }
@@ -200,7 +244,7 @@
         "condition": "[and(not(empty(parameters('createTier0'))), not(empty(parameters('rgNameTier0'))), not(empty(parameters('subscriptionIdTier0'))))]",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2020-10-01",
-        "name": "[variables('deploymentNames').tier0DeploymentName]",
+        "name": "[variables('deploymentNames').tier0RgDeploymentName]",
         "subscriptionId": "[parameters('subscriptionIdTier0')]",
         "location": "[deployment().location]",
         "properties": {
@@ -215,6 +259,9 @@
                 },
                 "location": {
                     "value": "[parameters('locationTier0')]"
+                },
+                "tags": {
+                    "value": "[parameters('tagsTier0')]"
                 }
             }
         }
@@ -224,7 +271,7 @@
         "condition": "[and(not(empty(parameters('createTier1'))), not(empty(parameters('rgNameTier1'))), not(empty(parameters('subscriptionIdTier1'))))]",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2020-10-01",
-        "name": "[variables('deploymentNames').tier1DeploymentName]",
+        "name": "[variables('deploymentNames').tier1RgDeploymentName]",
         "subscriptionId": "[parameters('subscriptionIdTier1')]",
         "location": "[deployment().location]",
         "properties": {
@@ -239,6 +286,9 @@
                 },
                 "location": {
                     "value": "[parameters('locationTier1')]"
+                },
+                "tags": {
+                    "value": "[parameters('tagsTier1')]"
                 }
             }
         }
@@ -248,7 +298,7 @@
         "condition": "[and(not(empty(parameters('createTier2'))), not(empty(parameters('rgNameTier2'))), not(empty(parameters('subscriptionIdTier2'))))]",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2020-10-01",
-        "name": "[variables('deploymentNames').tier2DeploymentName]",
+        "name": "[variables('deploymentNames').tier2RgDeploymentName]",
         "subscriptionId": "[parameters('subscriptionIdTier2')]",
         "location": "[deployment().location]",
         "properties": {
@@ -263,6 +313,9 @@
                 },
                 "location": {
                     "value": "[parameters('locationTier2')]"
+                },
+                "tags": {
+                    "value": "[parameters('tagsTier2')]"
                 }
             }
         }
