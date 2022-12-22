@@ -48,7 +48,8 @@
             }
         },
         "tagsAzurePolicyGuestConfig": {
-            "type": "object"
+            "type": "object",
+            "defaultValue": ""
         },
         "createTier0": {
             "type": "string",
@@ -81,7 +82,8 @@
             }
         },
         "tagsTier0": {
-            "type": "object"
+            "type": "object",
+            "defaultValue": ""
         },
         "createTier1": {
             "type": "string",
@@ -114,7 +116,8 @@
             }
         },
         "tagsTier1": {
-            "type": "object"
+            "type": "object",
+            "defaultValue": ""
         },
         "createTier2": {
             "type": "string",
@@ -147,7 +150,8 @@
             }
         },
         "tagsTier2": {
-            "type": "object"
+            "type": "object",
+            "defaultValue": ""
         },
         "currentDateTimeUtcNow": {
             "type": "string",
