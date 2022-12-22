@@ -171,7 +171,7 @@
         "deploymentSuffix": "[concat('-', deployment().location, '-', guid(parameters('enterpriseScaleCompanyPrefix'), parameters('currentDateTimeUtcNow')))]",
         "deploymentNames": {
             "azureSAPolicyGuestConfig": "[take(concat('arc-res-azPolGuestConf', variables('deploymentSuffix')), 64)]",
-            "azureRgPolicyGuestConfig": "[take(concat('arc-rg-tier0', variables('deploymentSuffix')), 64)]",
+            "azureRgPolicyGuestConfig": "[take(concat('arc-rg-azPolGuestConf', variables('deploymentSuffix')), 64)]",
             "tier0RgDeploymentName": "[take(concat('arc-rg-tier0', variables('deploymentSuffix')), 64)]",
             "tier1RgDeploymentName": "[take(concat('arc-rg-tier1', variables('deploymentSuffix')), 64)]",
             "tier2RgDeploymentName": "[take(concat('arc-rg-tier2', variables('deploymentSuffix')), 64)]"
