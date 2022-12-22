@@ -433,12 +433,28 @@
         },
         "outputs": {
             "parameters": {
+                "enterpriseScaleCompanyPrefix": "[steps('coreSettings').enterpriseScaleCompanyPrefix]",
+                "createStorageAccount": "[steps('azurePolicyGuestConfig').createStorageAccount]",
+                "rgNameStorageAccount": "[steps('azurePolicyGuestConfig').rgNameStorageAccount]",
+                "storageAccountName": "[steps('azurePolicyGuestConfig').storageAccountName]",
+                "subscriptionIdAzurePolicyGuestConfig": "[steps('azurePolicyGuestConfig').subscriptionIdAzurePolicyGuestConfig]",
+                "locationAzurePolicyGuestConfig": "[steps('azurePolicyGuestConfig').locationAzurePolicyGuestConfig]",
+                "tagsAzurePolicyGuestConfig": "[steps('azurePolicyGuestConfig').tagsAzurePolicyGuestConfig]",
+                "createTier0": "[steps('azureArcSettingsTier0').createTier0]",
                 "rgNameTier0": "[steps('azureArcSettingsTier0').rgNameTier0]",
                 "subscriptionIdTier0": "[steps('azureArcSettingsTier0').subscriptionIdTier0]",
+                "locationTier0": "[steps('azureArcSettingsTier0').locationTier0]",
+                "tagsTier0": "[steps('azureArcSettingsTier0').tagsTier0]",
+                "createTier1": "[steps('azureArcSettingsTier1').createTier1]",
                 "rgNameTier1": "[steps('azureArcSettingsTier1').rgNameTier1]",
                 "subscriptionIdTier1": "[steps('azureArcSettingsTier1').subscriptionIdTier1]",
+                "locationTier1": "[steps('azureArcSettingsTier1').locationTier1]",
+                "tagsTier1": "[steps('azureArcSettingsTier1').tagsTier1]",
+                "createTier2": "[steps('azureArcSettingsTier2').createTier2]",
                 "rgNameTier2": "[steps('azureArcSettingsTier2').rgNameTier2]",
-                "subscriptionIdTier2": "[steps('azureArcSettingsTier2').subscriptionIdTier2]"
+                "subscriptionIdTier2": "[steps('azureArcSettingsTier2').subscriptionIdTier2]",
+                "locationTier2": "[steps('azureArcSettingsTier2').locationTier2]",
+                "tagsTier2": "[steps('azureArcSettingsTier2').tagsTier2]"
             },
             "kind": "Tenant",
             "location": "[steps('basics').resourceScope.location.name]"
