@@ -55,6 +55,10 @@
                                 ]
                             },
                             {
+                                "name": "resourceScope",
+                                "type": "Microsoft.Common.ResourceScope"
+                            },
+                            {
                                 "name": "getSubscriptions",
                                 "type": "Microsoft.Solutions.ArmApiControl",
                                 "request": {
