@@ -15,7 +15,8 @@
             }
         },
         "tags": {
-            "type": "object"
+            "type": "object",
+            "defaultValue": "[createObject()]"
         }
     },
     "variables": {},
