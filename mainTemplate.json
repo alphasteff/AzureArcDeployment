@@ -178,7 +178,7 @@
         },
         "storageAccountNameAzurePolicyGuestConfig" : "[toLower(concat(parameters('enterpriseScaleCompanyPrefix'), parameters('storageAccountName'), guid(parameters('enterpriseScaleCompanyPrefix'), parameters('currentDateTimeUtcNow'))))]",
         "platformResourceIds": {
-            "privateDnsRgResourceId": "[concat('/subscriptions/', parameters('rgNameStorageAccount'), '/resourceGroups/', parameters('rgNameStorageAccount'))]"
+            "resourceIdRgPolicyGuestConfig": "[concat('/subscriptions/', parameters('rgNameStorageAccount'), '/resourceGroups/', parameters('rgNameStorageAccount'))]"
         }
     },
     "resources": [
@@ -227,9 +227,6 @@
                 "uri": "[variables('deploymentUris').storageAccount]"
             },
             "parameters": {
-                "rgName": {
-                    "value": "[parameters('rgNameStorageAccount')]"
-                },
                 "storageAccountName": {
                     "value": "[variables('storageAccountNameAzurePolicyGuestConfig')]"
                 },
