@@ -217,7 +217,6 @@
         "name": "[variables('deploymentNames').azureSAPolicyGuestConfig]",
         "subscriptionId": "[parameters('subscriptionIdAzurePolicyGuestConfig')]",
         "resourceGroup": "[parameters('rgNameStorageAccount')]",
-        "location": "[deployment().location]",
         "dependsOn": [
             "[resourceId('Microsoft.Resources/deployments', variables('deploymentNames').azureRgPolicyGuestConfig)]"
         ],
