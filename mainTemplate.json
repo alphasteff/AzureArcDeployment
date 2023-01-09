@@ -83,7 +83,7 @@
         },
         "tagsTier0": {
             "type": "object",
-            "defaultValue": "[createObject()]"
+            "defaultValue": {}
         },
         "createTier1": {
             "type": "string",
@@ -117,7 +117,7 @@
         },
         "tagsTier1": {
             "type": "object",
-            "defaultValue": "[createObject()]"
+            "defaultValue": {}
         },
         "createTier2": {
             "type": "string",
@@ -151,7 +151,7 @@
         },
         "tagsTier2": {
             "type": "object",
-            "defaultValue": "[createObject()]"
+            "defaultValue": {}
         },
         "currentDateTimeUtcNow": {
             "type": "string",
@@ -261,7 +261,7 @@
                     "value": "[parameters('locationTier0')]"
                 },
                 "tags": {
-                    "value": "[parameters('tagsTier0')]"
+                    "value": "[ if(contains(parameters('tagsTier0'), 'Microsoft.Resources/resourceGroups'), parameters('tagsTier0')['Microsoft.Resources/resourceGroups'], json('{}')) ]"
                 }
             }
         }
@@ -288,7 +288,7 @@
                     "value": "[parameters('locationTier1')]"
                 },
                 "tags": {
-                    "value": "[parameters('tagsTier1')]"
+                    "value": "[ if(contains(parameters('tagsTier1'), 'Microsoft.Resources/resourceGroups'), parameters('tagsTier1')['Microsoft.Resources/resourceGroups'], json('{}')) ]"
                 }
             }
         }
@@ -315,7 +315,7 @@
                     "value": "[parameters('locationTier2')]"
                 },
                 "tags": {
-                    "value": "[parameters('tagsTier2')]"
+                    "value": "[ if(contains(parameters('tagsTier2'), 'Microsoft.Resources/resourceGroups'), parameters('tagsTier2')['Microsoft.Resources/resourceGroups'], json('{}')) ]"
                 }
             }
         }
