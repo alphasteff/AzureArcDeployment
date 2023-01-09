@@ -28,7 +28,7 @@
         "storageAccountName": {
             "type": "string",
             "maxLength": 11,
-            "defaultValue": "'azpoguestconf')]",
+            "defaultValue": "'azpogc')]",
             "metadata": {
                 "description": "Provide the name of the Storage Account for Azure Policy Guest Configuration. (max. 11 characters, automatically supplemented with 13 characters)"
             }
@@ -177,7 +177,7 @@
             "tier1RgDeploymentName": "[take(concat('arc-rg-tier1', variables('deploymentSuffix')), 64)]",
             "tier2RgDeploymentName": "[take(concat('arc-rg-tier2', variables('deploymentSuffix')), 64)]"
         },
-        "storageAccountNameAzurePolicyGuestConfig" : "[toLower(concat(parameters('enterpriseScaleCompanyPrefix'), parameters('storageAccountName'), uniqueString(parameters('enterpriseScaleCompanyPrefix'))))]",
+        "storageAccountNameAzurePolicyGuestConfig" : "[toLower(concat(parameters('storageAccountName'), uniqueString(parameters('enterpriseScaleCompanyPrefix'))))]",
         "platformResourceIds": {
             "resourceIdRgPolicyGuestConfig": "[concat('/subscriptions/', parameters('rgNameStorageAccount'), '/resourceGroups/', parameters('rgNameStorageAccount'))]"
         }
