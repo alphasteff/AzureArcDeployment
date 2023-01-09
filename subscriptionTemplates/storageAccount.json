@@ -79,7 +79,7 @@
             "name": "[concat(parameters('storageAccountName'), '/default/', parameters('containers')[copyIndex('containercopy')].name)]",
             "location": "[parameters('location')]",
             "properties": {
-                "publicAccess": "[parameters('containers')[copyIndex('containercopy')].accessLevel]"
+                "publicAccess": "[parameters('containers')[copyIndex('containercopy')].publicAccess]"
             },
             "copy": {
                 "name": "containercopy",
