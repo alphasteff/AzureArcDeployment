@@ -141,12 +141,12 @@
                                 "type": "Microsoft.Common.TextBox",
                                 "label": "Storage Account  Name",
                                 "placeholder": "",
-                                "defaultValue": "[toLower('azurepolicyguestconfig')]",
+                                "defaultValue": "[toLower('azpoguestconf')]",
                                 "toolTip": "Use only allowed characters",
                                 "constraints": {
                                     "required": true,
-                                    "regex": "^[a-z0-9]{1,90}$",
-                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-90 characters long."
+                                    "regex": "^[a-z0-9]{1,11}$",
+                                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-11 characters long. (automatically supplemented with 13 characters)"
                                 },
                                 "visible": "[equals(steps('azurePolicyGuestConfig').createStorageAccount,'Yes')]"
                             },
