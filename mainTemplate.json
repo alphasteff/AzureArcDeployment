@@ -27,9 +27,10 @@
         },
         "storageAccountName": {
             "type": "string",
-            "defaultValue": "'azurepolicyguestconfig')]",
+            "maxLength": 11,
+            "defaultValue": "'azpoguestconf')]",
             "metadata": {
-                "description": "Provide the name of the Storage Account for Azure Policy Guest Configuration."
+                "description": "Provide the name of the Storage Account for Azure Policy Guest Configuration. (max. 11 characters, automatically supplemented with 13 characters)"
             }
         },
         "subscriptionIdAzurePolicyGuestConfig": {
