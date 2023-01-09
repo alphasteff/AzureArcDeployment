@@ -33,6 +33,22 @@
                 "description": "Provide the name of the Storage Account for Azure Policy Guest Configuration. (max. 11 characters, automatically supplemented with 13 characters)"
             }
         },
+        "storageAccountContainers": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "name": "guestconfiguration",
+                    "publicAccess": "Blob"
+                },
+                {
+                    "name": "test",
+                    "publicAccess": "None"
+                }
+            ],
+            "metadata": {
+                "description": "Provide the names of the containers to be created in the Storage Account for Azure Policy Guest Configuration."
+            }
+        },
         "subscriptionIdAzurePolicyGuestConfig": {
             "type": "string",
             "defaultValue": "",
@@ -230,6 +246,9 @@
             "parameters": {
                 "storageAccountName": {
                     "value": "[variables('storageAccountNameAzurePolicyGuestConfig')]"
+                },
+                "containers": {
+                    "value": "[parameters('storageAccountContainers')]"
                 },
                 "location": {
                     "value": "[parameters('locationAzurePolicyGuestConfig')]"
