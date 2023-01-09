@@ -44,7 +44,7 @@
             "properties": {
                 "accountType": "[parameters('storageAccountType')]"
             },
-            "tags": "[parameters('tags')]"
+            "tags": "[ if(contains(parameters('tags'), 'Microsoft.Storage/storageAccounts'), parameters('tags')['Microsoft.Storage/storageAccounts'], json('{}')) ]"
         }
     ],
     "outputs": {}
