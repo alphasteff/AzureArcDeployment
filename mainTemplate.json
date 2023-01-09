@@ -39,10 +39,6 @@
                 {
                     "name": "guestconfiguration",
                     "publicAccess": "Blob"
-                },
-                {
-                    "name": "test",
-                    "publicAccess": "None"
                 }
             ],
             "metadata": {
