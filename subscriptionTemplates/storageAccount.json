@@ -8,7 +8,7 @@
                 "description": "Name of the storage account"
             }
         },
-        "storageAccountType": {
+        "storageAccountSku": {
             "type": "string",
             "defaultValue": "Standard_LRS",
             "allowedValues": [
@@ -19,7 +19,21 @@
                 "Premium_LRS"
             ],
             "metadata": {
-                "description": "Storage Account type"
+                "description": "Storage Account SKU"
+            }
+        },
+        "storageAcountKind": {
+            "type": "string",
+            "defaultValue": "StorageV2",
+            "allowedValues": [
+                "Storage",
+                "StorageV2",
+                "BlobStorage",
+                "FileStorage",
+                "BlockBlobStorage"
+            ],
+            "metadata": {
+                "description": "Storage Account Kind"
             }
         },
         "containers": {
@@ -45,17 +59,17 @@
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2022-05-01",
             "name": "[parameters('storageAccountName')]",
             "location": "[parameters('location')]",
-            "properties": {
-                "accountType": "[parameters('storageAccountType')]"
-            },
+            "sku": "[parameters('storageAccountSku')]",
+            "kind": "[parameters('storageAcountKind')]",
+            "properties": {},
             "tags": "[parameters('tags')]"
         },
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2022-05-01",
             "condition": "[greater(length(parameters('containers')),0)]",
             "dependsOn": [
                 "[parameters('StorageAccountName')]"
