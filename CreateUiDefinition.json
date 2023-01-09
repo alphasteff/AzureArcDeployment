@@ -184,6 +184,7 @@
                                 "name": "tagsAzurePolicyGuestConfig",
                                 "type": "Microsoft.Common.TagsByResource",
                                 "resources": [
+                                    "Microsoft.Resources/resourceGroups",
                                     "Microsoft.Storage/storageAccounts"
                                 ],
                                 "visible": "[equals(steps('azurePolicyGuestConfig').createStorageAccount,'Yes')]"
