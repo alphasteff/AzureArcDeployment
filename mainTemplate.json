@@ -49,7 +49,7 @@
         },
         "tagsAzurePolicyGuestConfig": {
             "type": "object",
-            "defaultValue": "[createObject()]"
+            "defaultValue": {}
         },
         "createTier0": {
             "type": "string",
@@ -234,7 +234,7 @@
                     "value": "[parameters('locationAzurePolicyGuestConfig')]"
                 },
                 "tags": {
-                    "value": "[parameters('tagsAzurePolicyGuestConfig')]"
+                    "value": "[ if(contains(parameters('tagsAzurePolicyGuestConfig'), 'Microsoft.Storage/storageAccounts'), parameters('tagsAzurePolicyGuestConfig')['Microsoft.Storage/storageAccounts'], json('{}')) ]"
                 }
             }
         }
