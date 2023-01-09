@@ -202,9 +202,6 @@
                 },
                 "location": {
                     "value": "[parameters('locationAzurePolicyGuestConfig')]"
-                },
-                "tags": {
-                    "value": "[parameters('tagsAzurePolicyGuestConfig')]"
                 }
             }
         }
